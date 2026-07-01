@@ -1,65 +1,120 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { ProfileHeader } from "@/components/layout/ProfileHeader";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { useRouter } from "next/navigation";
+import { useTranslation } from "@/i18n/useTranslation";
+import { useTripContext } from "@/context/TripContext";
+
+export default function HomePage() {
+  const router = useRouter();
+  const { selectedPlaces } = useTripContext();
+  const { t } = useTranslation("home");
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-zinc-50 pb-20">
+      <ProfileHeader />
+
+      {/* Quick actions */}
+      <div className="px-5 mt-2">
+        <div className="grid grid-cols-2 gap-3">
+          <Card
+            hoverable
+            onClick={() => router.push("/social")}
+            className="p-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-coral-50 flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 text-coral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.193-9.193a4.5 4.5 0 00-6.364 0l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-zinc-900">{t.pasteLink}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {t.pasteLinkDesc}
+            </p>
+          </Card>
+
+          <Card
+            hoverable
+            onClick={() => router.push("/explore")}
+            className="p-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-zinc-900">{t.browsePlaces}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {t.browsePlacesDesc}
+            </p>
+          </Card>
+        </div>
+      </div>
+
+      {/* Recent trip preview */}
+      <div className="px-5 mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-zinc-900">{t.latestTrip || "Your Trip"}</h2>
+          {selectedPlaces.length > 0 && (
+            <button
+              onClick={() => router.push("/trip")}
+              className="text-xs text-coral-500 font-medium cursor-pointer hover:text-coral-600"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              {t.viewAll}
+            </button>
+          )}
+        </div>
+
+        {selectedPlaces.length === 0 ? (
+          <Card hoverable onClick={() => router.push("/explore")} className="p-6 text-center border-dashed border-2 bg-zinc-50/50">
+            <div className="w-12 h-12 bg-coral-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-coral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-zinc-900">Start a New Trip</p>
+            <p className="text-xs text-zinc-500 mt-1">Browse places or paste a TikTok link to get started.</p>
+          </Card>
+        ) : (
+          <Card hoverable onClick={() => router.push("/trip")} className="overflow-hidden">
+            <div className="flex gap-1 h-28">
+              {selectedPlaces.slice(0, 4).map((p, i) => (
+                <img
+                  key={p.id}
+                  src={p.imageUrl}
+                  alt={p.nameTh}
+                  className={`flex-1 object-cover ${i === 0 ? "rounded-l-xl" : ""} ${i === selectedPlaces.slice(0, 4).length - 1 ? "rounded-r-xl" : ""}`}
+                />
+              ))}
+            </div>
+            <div className="p-4">
+              <p className="text-sm font-semibold text-zinc-900">My Custom Trip</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{selectedPlaces.length} places · Tap to view timeline</p>
+            </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Getting started hint */}
+      <div className="px-5 mt-6">
+        <Card className="p-4 bg-zinc-50 border-dashed">
+          <p className="text-sm font-medium text-zinc-700">{t.newHere}</p>
+          <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            {t.newHereDesc}
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => router.push("/onboarding")}
+            className="text-xs text-coral-500 font-medium mt-2 cursor-pointer hover:text-coral-600"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            {t.setupPrefs}
+          </button>
+        </Card>
+      </div>
+
+      <BottomNav />
     </div>
   );
 }
