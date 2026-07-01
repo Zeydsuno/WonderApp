@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useTranslation } from "@/i18n/useTranslation";
 
 interface LinkInputProps {
   onSubmit: (url: string) => void;
@@ -11,11 +12,12 @@ interface LinkInputProps {
 export function LinkInput({ onSubmit, loading }: LinkInputProps) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
+  const { t } = useTranslation("social");
 
   const validate = (val: string) => {
-    if (!val.trim()) return "Paste a link to get started.";
+    if (!val.trim()) return t.emptyError;
     if (!val.match(/tiktok\.com|instagram\.com|ig\.me/i)) {
-      return "We support TikTok and Instagram links for now.";
+      return t.supportError;
     }
     return "";
   };
@@ -34,7 +36,7 @@ export function LinkInput({ onSubmit, loading }: LinkInputProps) {
     <div className="px-5">
       <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-4">
         <label className="text-sm font-medium text-zinc-800 mb-2 block">
-          Drop a social media link
+          {t.dropLink}
         </label>
         <div className="flex gap-2">
           <div className="flex-1 relative">
@@ -42,7 +44,7 @@ export function LinkInput({ onSubmit, loading }: LinkInputProps) {
               type="url"
               value={url}
               onChange={(e) => { setUrl(e.target.value); setError(""); }}
-              placeholder="https://www.tiktok.com/@user/video/..."
+              placeholder={t.placeholder}
               className="w-full h-10 px-3 pr-9 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-coral-100 focus:border-coral-500 transition-all"
             />
             {url && (
@@ -56,13 +58,13 @@ export function LinkInput({ onSubmit, loading }: LinkInputProps) {
               </button>
             )}
           </div>
-          <Button onClick={handleSubmit} loading={loading} disabled={!url.trim()}>
-            Go
+          <Button onClick={handleSubmit} loading={loading}>
+            {t.go}
           </Button>
         </div>
         {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
-        <p className="text-xs text-zinc-400 mt-2">
-          We will read the caption and find every place mentioned.
+        <p className="text-[11px] text-zinc-500 mt-3 text-center">
+          {t.weWillRead}
         </p>
       </div>
     </div>

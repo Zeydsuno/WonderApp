@@ -29,11 +29,18 @@ export const en = {
     placesSelected: "places selected",
     whereToPlaceholder: "Where to? (Name or TikTok link)",
     trendingDestinations: "Trending Destinations",
+    noPlacesFound: "No places found",
+    tryMoreSpecific: "Try being more specific or use AI search",
   },
   route: {
     yourRoute: "Your Route",
     emptyRoute: "Your route is empty.",
     emptyRouteDesc: "Go to Discover to add places.",
+    addPlace: "Add Place",
+    saveItinerary: "Save This Itinerary",
+    openGoogleMaps: "Navigate with Google Maps",
+    clearRoute: "Clear Route",
+    clearRouteAlert: "Clear all places and start a new route?",
   },
   onboarding: {
     whereStart: "Where are you starting from?",
@@ -99,11 +106,17 @@ export const en = {
     walk: "walk",
     drive: "drive",
     shuffledMsg: "Route shuffled. Check the new order.",
+    shuffledMsg: "Route shuffled. Check the new order.",
+    fromLocation: "from your location",
+    free: "Free",
+    mightBeClosed: "Might be closed",
+    mightCloseEarly: "Might close during visit",
   },
   map: {
     title: "Route Map",
     subtitle: "Bangkok Day Trip",
     placesOnRoute: "Places on route",
     spots: "spots",
+    youAreHere: "📍 You are here",
   }
 };

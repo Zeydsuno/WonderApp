@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTripContext } from "@/context/TripContext";
 import { type Place } from "@/data/places";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/i18n/useTranslation";
 import { PlaceDetail } from "@/components/places/PlaceDetail";
+import { Badge } from "@/components/ui/Badge";
 
 interface UnifiedInputProps {
   onComplete?: () => void;
@@ -67,7 +68,11 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
     }
   };
 
+  const lastParsedUrl = useRef("");
+
   const handleParseSocial = async (url: string) => {
+    if (lastParsedUrl.current === url || loading) return;
+    lastParsedUrl.current = url;
     setLoading(true);
     try {
       const res = await fetch("/api/parse-social", {
@@ -89,6 +94,9 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
+    if (val !== lastParsedUrl.current) {
+      lastParsedUrl.current = ""; // Reset if they changed the input
+    }
     if (val && !isUrl(val)) {
       setIsAutocompleteLoading(true);
     }
@@ -97,9 +105,7 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
   // Debounce autocomplete
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (isUrl(query) && query.length > 15) {
-        handleParseSocial(query);
-      } else {
+      if (!isUrl(query)) {
         handleAutocomplete(query);
       }
     }, 500);
@@ -130,7 +136,17 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
   return (
     <>
       <div className="w-full relative">
-        <div className="relative flex items-center bg-white shadow-xl shadow-zinc-200/50 rounded-2xl border border-zinc-100 overflow-hidden transition-all focus-within:ring-2 focus-within:ring-coral-500/50">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (isUrl(query)) {
+              handleParseSocial(query);
+            } else {
+              handleSearchPlaces(query);
+            }
+          }}
+          className="relative flex items-center bg-white shadow-xl shadow-zinc-200/50 rounded-2xl border border-zinc-100 overflow-hidden transition-all focus-within:ring-2 focus-within:ring-coral-500/50"
+        >
         <div className="pl-4 text-zinc-400">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -149,7 +165,7 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
             <div className="w-5 h-5 border-2 border-coral-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
-      </div>
+        </form>
 
       {/* Search Results / Skeleton Dropdown */}
       {(query || loading) && (
@@ -193,12 +209,25 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
                       {/* Left: View Details */}
                       <button
                         onClick={() => setSelectedDetailPlace(place)}
-                        className="flex-1 flex items-center gap-3 text-left overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-coral-500/30 p-1"
+                        className="flex-1 flex gap-3 text-left overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-coral-500/30 p-1"
                       >
-                        <img src={place.imageUrl || "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&q=80"} alt={place.nameTh} className="w-10 h-10 rounded-xl object-cover shrink-0" />
-                        <div className="flex-1 min-w-0">
+                        <img src={place.imageUrl || "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&q=80"} alt={place.nameTh} className="w-14 h-14 rounded-xl object-cover shrink-0" />
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
                           <p className={`text-sm font-semibold truncate ${isAdded ? "text-coral-700" : "text-zinc-900"}`}>{place.nameTh}</p>
-                          <p className={`text-xs truncate ${isAdded ? "text-coral-600/70" : "text-zinc-500"}`}>{place.zone}</p>
+                          <p className={`text-xs truncate ${isAdded ? "text-coral-600/70" : "text-zinc-500"}`}>{place.zone} • {place.estDuration} min</p>
+                          {place.description && place.description !== "TikTok Place" && place.description !== "API Fallback" && (
+                            <p className="text-xs text-zinc-400 truncate mt-0.5">{place.description}</p>
+                          )}
+                          {(place.theme?.length > 0 || place.status?.length > 0) && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {place.status?.slice(0, 1).map((s: string) => (
+                                <Badge key={s} variant="coral" className="text-[9px] px-1.5 py-0">{s}</Badge>
+                              ))}
+                              {place.theme?.slice(0, 2).map((t: string) => (
+                                <Badge key={t} variant="neutral" className="text-[9px] px-1.5 py-0">{t}</Badge>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </button>
 
@@ -244,8 +273,8 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
             ) : (
               !isUrl(query) && (
                 <div className="p-4 text-center">
-                  <p className="text-sm font-semibold text-zinc-900">ไม่พบสถานที่</p>
-                  <p className="text-xs text-zinc-500 mt-1">ลองพิมพ์ชื่อสถานที่ให้ชัดเจนขึ้น หรือกดค้นหาแบบ AI</p>
+                  <p className="text-sm font-semibold text-zinc-900">{t.noPlacesFound}</p>
+                  <p className="text-xs text-zinc-500 mt-1">{t.tryMoreSpecific}</p>
                 </div>
               )
             )
@@ -264,6 +293,11 @@ export function UnifiedInput({ onComplete }: UnifiedInputProps = {}) {
               addPlace(p);
             }
             setSelectedDetailPlace(null);
+            if (onComplete) {
+              onComplete();
+            } else {
+              router.push('/route');
+            }
           }}
         />
       )}

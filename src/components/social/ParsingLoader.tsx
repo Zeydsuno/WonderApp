@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-const steps = [
-  "Reading the caption...",
-  "Spotting place names...",
-  "Matching with our database...",
-  "Almost there...",
-];
+import { useTranslation } from "@/i18n/useTranslation";
 
 interface ParsingLoaderProps {
   onComplete: () => void;
@@ -15,6 +9,14 @@ interface ParsingLoaderProps {
 
 export function ParsingLoader({ onComplete }: ParsingLoaderProps) {
   const [stepIndex, setStepIndex] = useState(0);
+  const { t } = useTranslation("social");
+
+  const steps = [
+    t.readingCaption,
+    t.spottingPlaces,
+    t.matchingDB,
+    t.almostThere,
+  ];
 
   useEffect(() => {
     if (stepIndex < steps.length - 1) {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePreferences } from "@/hooks/usePreferences";
+import { useTranslation } from "@/i18n/useTranslation";
 
 interface LocationPermissionProps {
   onComplete: (coords: { lat: number; lng: number } | null) => void;
@@ -11,6 +12,7 @@ interface LocationPermissionProps {
 export function LocationPermission({ onComplete }: LocationPermissionProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "denied">("idle");
   const { updatePreferences } = usePreferences();
+  const { t } = useTranslation("onboarding");
 
   const requestLocation = () => {
     setStatus("loading");
@@ -38,10 +40,10 @@ export function LocationPermission({ onComplete }: LocationPermissionProps) {
       </div>
 
       <h2 className="text-xl font-semibold text-zinc-900 tracking-tight mb-2">
-        Where are you starting from?
+        {t.whereStart}
       </h2>
-      <p className="text-sm text-zinc-500 max-w-xs mb-8">
-        We need your location to find great spots nearby. You can also pick a zone manually.
+      <p className="text-base text-zinc-500 mb-8 max-w-[280px]">
+        {t.whereStartDesc}
       </p>
 
       {status === "loading" ? (
@@ -71,7 +73,7 @@ export function LocationPermission({ onComplete }: LocationPermissionProps) {
             }}
             defaultValue=""
           >
-            <option value="" disabled>Select your area</option>
+            <option value="" disabled>{t.selectArea}</option>
             <option value="สยาม">สยาม / Siam</option>
             <option value="รามคำแหง">รามคำแหง / Ramkhamhaeng</option>
             <option value="สุขุมวิท">สุขุมวิท / Sukhumvit</option>

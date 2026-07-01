@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { Place } from "@/data/places";
+import { useTranslation } from "@/i18n/useTranslation";
 
 interface ParseResultProps {
   results: { place: Place; confidence: "high" | "medium" }[];
@@ -11,6 +12,8 @@ interface ParseResultProps {
 }
 
 export function ParseResult({ results, onAddAll, onRemove }: ParseResultProps) {
+  const { t } = useTranslation("social");
+
   if (results.length === 0) {
     return (
       <div className="flex flex-col items-center py-12 px-5 text-center">
@@ -19,8 +22,8 @@ export function ParseResult({ results, onAddAll, onRemove }: ParseResultProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
         </div>
-        <p className="text-sm font-medium text-zinc-700">Could not find any places</p>
-        <p className="text-xs text-zinc-400 mt-1">Try pasting a different link with a more detailed caption.</p>
+        <p className="text-sm font-medium text-zinc-700">{t.noPlaces}</p>
+        <p className="text-xs text-zinc-400 mt-1">{t.noPlacesDesc}</p>
       </div>
     );
   }
@@ -29,9 +32,9 @@ export function ParseResult({ results, onAddAll, onRemove }: ParseResultProps) {
     <div className="px-5 mt-4">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-medium text-zinc-700">
-          Found {results.length} {results.length === 1 ? "place" : "places"}
+          {t.found} {results.length} {results.length === 1 ? t.place : t.places}
         </p>
-        <Badge variant="coral">{results.length} matched</Badge>
+        <Badge variant="coral">{results.length} {t.matched}</Badge>
       </div>
 
       <div className="space-y-2">
@@ -46,7 +49,7 @@ export function ParseResult({ results, onAddAll, onRemove }: ParseResultProps) {
               <p className="text-xs text-zinc-500">{place.zone} · {place.estDuration} min</p>
             </div>
             <Badge variant={confidence === "high" ? "coral" : "neutral"}>
-              {confidence === "high" ? "Exact" : "Close"}
+              {confidence === "high" ? t.exact : t.close}
             </Badge>
             <button
               onClick={() => onRemove(place.id)}
@@ -61,7 +64,7 @@ export function ParseResult({ results, onAddAll, onRemove }: ParseResultProps) {
       </div>
 
       <Button size="large" className="w-full mt-4" onClick={onAddAll}>
-        Add all to timeline
+        {t.addAll}
       </Button>
     </div>
   );

@@ -197,6 +197,7 @@ export function TrendingPlaces() {
           onAdd={(p) => {
             addPlace(p);
             setActiveDetailPlace(null);
+            router.push('/route');
           }}
         />
       )}
