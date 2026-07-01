@@ -17,7 +17,8 @@ export default function HomePage() {
 
   useEffect(() => {
     // Check if user has completed onboarding
-    const hasOnboarded = localStorage.getItem('hasOnboarded');
+    const prefsRaw = localStorage.getItem('wanderapp_prefs');
+    const hasOnboarded = prefsRaw ? JSON.parse(prefsRaw).hasOnboarded : false;
     if (!hasOnboarded) {
       router.push('/onboarding');
     } else {
