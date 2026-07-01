@@ -74,7 +74,7 @@ export function PreferencesSetup({ onComplete }: { onComplete: () => void }) {
             updatePreferences({ hasOnboarded: true });
             onComplete();
           }}
-          className="w-full bg-zinc-900 text-white font-bold py-4 rounded-full active:scale-95 transition-transform flex items-center justify-center shadow-lg shadow-zinc-900/20"
+          className="w-full bg-coral-500 text-white font-bold py-4 rounded-full active:scale-95 transition-transform flex items-center justify-center shadow-lg shadow-coral-500/30 hover:bg-coral-600"
         >
           Let&apos;s Explore
           <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
