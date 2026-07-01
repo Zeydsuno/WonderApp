@@ -8,6 +8,8 @@ export const th = {
     loading: "กำลังโหลด...",
     save: "บันทึก",
     cancel: "ยกเลิก",
+    discover: "ค้นหา",
+    myRoute: "ทริปของฉัน",
   },
   home: {
     goodMorning: "สวัสดีตอนเช้า",
@@ -22,6 +24,16 @@ export const th = {
     newHere: "เพิ่งเคยใช้งานใช่ไหม?",
     newHereDesc: "เริ่มต้นโดยการวางลิงก์ TikTok ที่รีวิวสถานที่ที่คุณอยากไป หรือเลือกดูจากสถานที่แนะนำของเรา แล้วเราจะจัดเส้นทางที่ดีที่สุดให้คุณ",
     setupPrefs: "ตั้งค่าความชอบของคุณ",
+    whereTo: "เราจะไป\nที่ไหนกันดี?",
+    resumeTrip: "จัดทริปปัจจุบันต่อ",
+    placesSelected: "สถานที่ที่เลือกไว้",
+    whereToPlaceholder: "ไปไหนดี? (ชื่อ หรือลิงก์ TikTok)",
+    trendingDestinations: "สถานที่ยอดฮิต",
+  },
+  route: {
+    yourRoute: "เส้นทางของคุณ",
+    emptyRoute: "เส้นทางของคุณยังว่างเปล่า",
+    emptyRouteDesc: "ไปที่หน้าค้นหาเพื่อเพิ่มสถานที่",
   },
   onboarding: {
     whereStart: "คุณอยากเริ่มจากตรงไหน?",

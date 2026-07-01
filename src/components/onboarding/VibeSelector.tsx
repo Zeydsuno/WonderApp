@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
+import { usePreferences } from "@/hooks/usePreferences";
 
 const vibeOptions = [
   { id: "cafe", label: "Cafe", icon: "M18.5 12.5a3 3 0 00-3-3h-1a3 3 0 00-3 3v0a3 3 0 003 3h1a3 3 0 003-3z" },
@@ -19,8 +20,17 @@ interface VibeSelectorProps {
 }
 
 export function VibeSelector({ onComplete }: VibeSelectorProps) {
+  const { preferences, updatePreferences, isLoaded } = usePreferences();
   const [selected, setSelected] = useState<string[]>([]);
   const [hours, setHours] = useState(4);
+
+  useEffect(() => {
+    if (isLoaded) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelected(preferences.vibes || []);
+      setHours(preferences.hours || 4);
+    }
+  }, [isLoaded, preferences.vibes, preferences.hours]);
 
   const toggle = (id: string) => {
     setSelected((prev) =>
@@ -78,7 +88,10 @@ export function VibeSelector({ onComplete }: VibeSelectorProps) {
         size="large"
         className="w-full"
         disabled={selected.length === 0}
-        onClick={() => onComplete(selected, hours)}
+        onClick={() => {
+          updatePreferences({ vibes: selected, hours });
+          onComplete(selected, hours);
+        }}
       >
         {selected.length === 0 ? "Pick at least one vibe" : "Let's explore"}
       </Button>

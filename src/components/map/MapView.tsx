@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import type { Place } from "@/data/places";
@@ -48,19 +48,64 @@ interface MapViewProps {
 export default function MapView({ places, activePlaceId, onMarkerClick }: MapViewProps) {
   // Fix Leaflet SSR issue
   const [mounted, setMounted] = useState(false);
+  
+  // State for road polyline
+  const [routePositions, setRoutePositions] = useState<[number, number][]>([]);
+  const [isRouting, setIsRouting] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (places.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRoutePositions([]);
+      return;
+    }
+
+    const fetchRoute = async () => {
+      setIsRouting(true);
+      try {
+        // Proxy request to our backend
+        const coordsStr = places.map(p => `${p.lng},${p.lat}`).join(';');
+        const res = await fetch(`/api/route-osrm?coords=${coordsStr}`);
+        if (!res.ok) throw new Error("OSRM fetch failed");
+        const data = await res.json();
+        
+        if (data.code === "Ok" && data.routes.length > 0) {
+          const geojsonCoords = data.routes[0].geometry.coordinates;
+          // Leaflet expects [lat, lng]
+          const leafletCoords = geojsonCoords.map((c: number[]) => [c[1], c[0]] as [number, number]);
+          setRoutePositions(leafletCoords);
+        }
+      } catch (err) {
+        console.error("Routing error, falling back to straight lines:", err);
+        // Fallback to straight lines if OSRM fails
+        setRoutePositions(places.map(p => [p.lat, p.lng] as [number, number]));
+      } finally {
+        setIsRouting(false);
+      }
+    };
+
+    fetchRoute();
+  }, [places]);
+
   if (!mounted) return <div className="w-full h-full bg-zinc-100 animate-pulse" />;
 
   const center: [number, number] = places.length > 0 ? [places[0].lat, places[0].lng] : [13.7563, 100.5018];
-  
-  // Create polyline positions
-  const routePositions = places.map(p => [p.lat, p.lng] as [number, number]);
 
   return (
     <div className="w-full h-full relative z-0">
+      {/* Routing Loading Indicator */}
+      {isRouting && (
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border border-zinc-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+          <div className="w-4 h-4 border-2 border-coral-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-zinc-700">Calculating route...</span>
+        </div>
+      )}
+
       <MapContainer 
         center={center} 
         zoom={13} 
@@ -78,7 +123,7 @@ export default function MapView({ places, activePlaceId, onMarkerClick }: MapVie
         {routePositions.length > 1 && (
           <Polyline 
             positions={routePositions} 
-            pathOptions={{ color: "#f43f5e", weight: 4, opacity: 0.8, dashArray: "5, 10" }} 
+            pathOptions={{ color: "#f43f5e", weight: 5, opacity: 0.9 }} 
           />
         )}
 
@@ -91,14 +136,7 @@ export default function MapView({ places, activePlaceId, onMarkerClick }: MapVie
             eventHandlers={{
               click: () => onMarkerClick?.(place)
             }}
-          >
-            <Popup className="custom-popup">
-              <div className="font-sans">
-                <p className="font-semibold text-zinc-900 text-sm mb-1">{place.nameTh}</p>
-                <p className="text-xs text-zinc-500">{place.estDuration} min · {place.zone}</p>
-              </div>
-            </Popup>
-          </Marker>
+          />
         ))}
       </MapContainer>
       

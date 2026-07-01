@@ -8,6 +8,8 @@ export const en = {
     loading: "Loading...",
     save: "Save",
     cancel: "Cancel",
+    discover: "Discover",
+    myRoute: "My Route",
   },
   home: {
     goodMorning: "Good morning",
@@ -22,6 +24,16 @@ export const en = {
     newHere: "New here?",
     newHereDesc: "Start by pasting a TikTok link with places you want to visit, or browse our curated list. We will plan the perfect route for you.",
     setupPrefs: "Set up your preferences",
+    whereTo: "Where \n are we going?",
+    resumeTrip: "Resume Current Trip",
+    placesSelected: "places selected",
+    whereToPlaceholder: "Where to? (Name or TikTok link)",
+    trendingDestinations: "Trending Destinations",
+  },
+  route: {
+    yourRoute: "Your Route",
+    emptyRoute: "Your route is empty.",
+    emptyRouteDesc: "Go to Discover to add places.",
   },
   onboarding: {
     whereStart: "Where are you starting from?",

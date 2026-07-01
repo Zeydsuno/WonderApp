@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LocationPermission } from "@/components/onboarding/LocationPermission";
 import { VibeSelector } from "@/components/onboarding/VibeSelector";
+import { PreferencesSetup } from "@/components/onboarding/PreferencesSetup";
 import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
@@ -16,8 +17,9 @@ export default function OnboardingPage() {
         <div className="flex gap-2">
           <div className={`h-1 flex-1 rounded-full ${step >= 1 ? "bg-coral-500" : "bg-zinc-200"}`} />
           <div className={`h-1 flex-1 rounded-full ${step >= 2 ? "bg-coral-500" : "bg-zinc-200"}`} />
+          <div className={`h-1 flex-1 rounded-full ${step >= 3 ? "bg-coral-500" : "bg-zinc-200"}`} />
         </div>
-        <p className="text-xs text-zinc-400 mt-2">Step {step} of 2</p>
+        <p className="text-xs text-zinc-400 mt-2">Step {step} of 3</p>
       </div>
 
       {step === 1 && (
@@ -28,7 +30,13 @@ export default function OnboardingPage() {
 
       {step === 2 && (
         <VibeSelector
-          onComplete={() => router.push("/explore")}
+          onComplete={() => setStep(3)}
+        />
+      )}
+
+      {step === 3 && (
+        <PreferencesSetup
+          onComplete={() => router.push("/")}
         />
       )}
     </div>

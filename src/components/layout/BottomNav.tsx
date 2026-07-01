@@ -4,54 +4,26 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useTranslation } from "@/i18n/useTranslation";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getTabs = (t: any) => [
+const getTabs = (t: Record<string, string>) => [
   {
-    label: t.explore,
-    href: "/explore",
+    label: t.discover,
+    href: "/",
     icon: (active: boolean) => (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke={active ? "currentColor" : "currentColor"} strokeWidth={active ? 2.5 : 1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
       </svg>
     ),
   },
   {
-    label: t.social,
-    href: "/social",
-    icon: (active: boolean) => (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 2.5 : 1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.193-9.193a4.5 4.5 0 00-6.364 0l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-      </svg>
-    ),
-  },
-  {
-    label: t.map,
-    href: "/map",
+    label: t.myRoute,
+    href: "/route",
     icon: (active: boolean) => (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 2.5 : 1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
       </svg>
     ),
-  },
-  {
-    label: t.timeline,
-    href: "/trip",
-    icon: (active: boolean) => (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 2.5 : 1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-      </svg>
-    ),
-  },
-  {
-    label: t.profile,
-    href: "/",
-    icon: (active: boolean) => (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 2.5 : 1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-      </svg>
-    ),
-  },
+  }
 ];
 
 export function BottomNav() {
@@ -68,6 +40,11 @@ export function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                if (isActive) {
+                  e.preventDefault();
+                }
+              }}
               className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors ${
                 isActive ? "text-coral-500" : "text-zinc-400 hover:text-zinc-600"
               }`}

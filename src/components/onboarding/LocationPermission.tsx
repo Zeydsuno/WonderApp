@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { usePreferences } from "@/hooks/usePreferences";
 
 interface LocationPermissionProps {
   onComplete: (coords: { lat: number; lng: number } | null) => void;
@@ -9,6 +10,7 @@ interface LocationPermissionProps {
 
 export function LocationPermission({ onComplete }: LocationPermissionProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "denied">("idle");
+  const { updatePreferences } = usePreferences();
 
   const requestLocation = () => {
     setStatus("loading");
@@ -17,7 +19,11 @@ export function LocationPermission({ onComplete }: LocationPermissionProps) {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => onComplete({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        updatePreferences({ location: coords });
+        onComplete(coords);
+      },
       () => setStatus("denied")
     );
   };
@@ -58,7 +64,10 @@ export function LocationPermission({ onComplete }: LocationPermissionProps) {
                 สีลม: { lat: 13.7244, lng: 100.5290 },
               };
               const z = zones[e.target.value];
-              if (z) onComplete(z);
+              if (z) {
+                updatePreferences({ location: z });
+                onComplete(z);
+              }
             }}
             defaultValue=""
           >
@@ -76,7 +85,7 @@ export function LocationPermission({ onComplete }: LocationPermissionProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
             </svg>
             <p className="text-xs text-blue-700 font-medium text-left">
-              We use your location solely to recommend places near you and calculate travel times accurately. We don't save your exact coordinates.
+              We use your location solely to recommend places near you and calculate travel times accurately. We don&apos;t save your exact coordinates.
             </p>
           </div>
           <Button size="large" onClick={requestLocation} className="w-full">

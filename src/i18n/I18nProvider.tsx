@@ -28,7 +28,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       // Default to Thai for this app if nothing saved
       setTimeout(() => setLang("th"), 0);
     }
-    setMounted(true);
+    setTimeout(() => setMounted(true), 0);
   }, []);
 
   const toggleLanguage = () => {

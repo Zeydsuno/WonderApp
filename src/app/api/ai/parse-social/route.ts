@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       if (extracted_places.places && Array.isArray(extracted_places.places)) {
         extracted_places = extracted_places.places;
       }
-    } catch (e) {
+    } catch (_) {
       console.error("Failed to parse JSON array from Groq", text);
     }
 

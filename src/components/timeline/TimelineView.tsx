@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { TimelineSlot } from "@/components/itinerary/TimelineSlot";
 import { TransitGap } from "@/components/timeline/TransitGap";
 import type { Place } from "@/data/places";
+import { useTripContext } from "@/context/TripContext";
 
 interface SlotData {
   place: Place;
@@ -14,6 +15,7 @@ interface SlotData {
 
 interface TimelineViewProps {
   initialSlots: SlotData[];
+  onPlaceClick: (place: Place) => void;
 }
 
 function recalcTimes(slots: SlotData[]): SlotData[] {
@@ -32,9 +34,15 @@ function recalcTimes(slots: SlotData[]): SlotData[] {
   });
 }
 
-export function TimelineView({ initialSlots }: TimelineViewProps) {
+export function TimelineView({ initialSlots, onPlaceClick }: TimelineViewProps) {
+  const { removePlace } = useTripContext();
   const [slots, setSlots] = useState<SlotData[]>(() => recalcTimes(initialSlots));
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSlots(recalcTimes(initialSlots));
+  }, [initialSlots]);
 
   const handleDragStart = useCallback((_e: React.DragEvent, index: number) => {
     setDragIdx(index);
@@ -86,6 +94,8 @@ export function TimelineView({ initialSlots }: TimelineViewProps) {
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
+            onDelete={removePlace}
+            onClick={() => onPlaceClick(slot.place)}
           />
           {i < slots.length - 1 && (
             <TransitGap duration={slots[i + 1].transitMin} mode={slots[i + 1].transitMin > 10 ? "drive" : "walk"} />

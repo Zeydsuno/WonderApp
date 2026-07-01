@@ -3,6 +3,8 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { Place } from "@/data/places";
+import { useTripContext } from "@/context/TripContext";
+import { useEffect } from "react";
 
 interface PlaceDetailProps {
   place: Place;
@@ -11,8 +13,15 @@ interface PlaceDetailProps {
 }
 
 export function PlaceDetail({ place, onClose, onAdd }: PlaceDetailProps) {
+  const { addRecentPlace } = useTripContext();
+
+  useEffect(() => {
+    addRecentPlace(place);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [place]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[85vh] overflow-auto shadow-xl">
         {/* Image */}
@@ -31,7 +40,7 @@ export function PlaceDetail({ place, onClose, onAdd }: PlaceDetailProps) {
         {/* Content */}
         <div className="p-5">
           <div className="flex flex-wrap gap-1.5 mb-2">
-            {place.status.map((s) => (
+            {place.status?.map((s) => (
               <Badge key={s} variant={s === "Hidden Gem" ? "coral" : "neutral"}>{s}</Badge>
             ))}
           </div>
@@ -63,7 +72,7 @@ export function PlaceDetail({ place, onClose, onAdd }: PlaceDetailProps) {
           <div className="mt-4">
             <p className="text-xs text-zinc-400 font-medium uppercase tracking-wide mb-2">Things to do</p>
             <div className="flex flex-wrap gap-1.5">
-              {place.keyActivities.map((a) => (
+              {place.keyActivities?.map((a) => (
                 <Badge key={a} variant="outline">{a}</Badge>
               ))}
             </div>
