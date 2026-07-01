@@ -60,54 +60,55 @@ export async function POST(req: Request) {
     // STEP 3: Real Foursquare Search
     const results = await Promise.all(
       extractedPlaces.map(async (placeObj) => {
-        const placeName = typeof placeObj === "string" ? placeObj : placeObj.name;
+        const placeName = typeof placeObj === "string" ? placeObj : (placeObj.name || placeObj.nameTh || placeObj.nameEn || "Unknown Place");
         try {
-          const params = new URLSearchParams({
-            query: placeName,
-            limit: '1',
-            near: 'Thailand' // Search entire country for travel destinations
-          });
+          const nearLoc = placeObj.zone && placeObj.zone.trim() !== "" 
+            ? `${placeObj.zone}, Thailand` 
+            : 'Thailand';
+
+          const osmQuery = `${placeName} ${nearLoc}`;
           
-          const fsqRes = await fetch(`https://places-api.foursquare.com/places/search?${params}`, {
+          const osmRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(osmQuery)}&format=json&limit=1`, {
             headers: {
-              "Authorization": `Bearer ${apiKey}`,
-              "X-Places-Api-Version": "2025-06-17",
-              "Accept": "application/json"
+              "User-Agent": "Wanderapp-Travel-Agent/1.0"
             }
           });
 
-          if (fsqRes.ok) {
-            const data = await fsqRes.json();
-            if (data.results && data.results.length > 0) {
-              const p = data.results[0];
-              const imageUrl = getFallbackImage(p.categories?.[0]?.name);
+          if (osmRes.ok) {
+            const data = await osmRes.json();
+            if (data && data.length > 0) {
+              const p = data[0];
+              const imageUrl = getFallbackImage(placeObj.theme?.[0]);
               
               return {
-                id: p.fsq_place_id,
-                nameTh: placeObj.nameTh || p.name,
-                nameEn: placeObj.nameEn || p.name,
-                description: placeObj.description || p.categories?.[0]?.name || "TikTok Place",
-                lat: p.latitude || placeObj.lat || 13.75,
-                lng: p.longitude || placeObj.lng || 100.5,
+                id: p.place_id.toString(),
+                nameTh: placeObj.nameTh || placeName,
+                nameEn: placeObj.nameEn || placeName,
+                description: placeObj.description || "TikTok Place",
+                lat: parseFloat(p.lat) || placeObj.lat || 13.75,
+                lng: parseFloat(p.lon) || placeObj.lng || 100.5,
                 status: placeObj.status || ["From TikTok"],
                 theme: placeObj.theme || ["Social"],
                 estDuration: placeObj.estDuration || 90,
                 priceLevel: placeObj.priceLevel || "฿฿",
                 operatingHours: placeObj.operatingHours || "10:00 - 18:00",
                 bestTimeToVisit: placeObj.bestTimeToVisit || "Anytime",
-                zone: p.location?.locality || p.location?.region || placeObj.zone || "Thailand",
+                zone: placeObj.zone || "Thailand",
                 keyActivities: placeObj.keyActivities || ["Visit"],
                 imageUrl
               };
             }
           }
         } catch (e) {
-          console.error(`Foursquare failed for ${placeName}`, e);
+          console.error(`OSM Geocoding failed for ${placeName}`, e);
         }
         
         // Generic fallback for extracted place using ALL of the AI's generated data!
+        // Use a deterministic ID based on the place name so it doesn't change on re-parse
+        const deterministicId = `gen_${placeName.replace(/[^a-zA-Z0-9ก-๙]/g, '').toLowerCase()}`;
+        
         return {
-          id: `gen_${Math.random().toString(36).substr(2, 9)}`,
+          id: deterministicId,
           nameTh: placeObj.nameTh || placeName,
           nameEn: placeObj.nameEn || placeName,
           description: placeObj.description || "Extracted from TikTok",

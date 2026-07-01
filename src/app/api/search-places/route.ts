@@ -212,13 +212,39 @@ async function generatePlacesWithAI(location: string) {
     // AND we must verify coordinates via OSM sequentially to respect Nominatim rate limit (1 req/sec).
     const enrichedPlaces = [];
     
+    // First, get the bounding box / center of the requested location itself to use as a safe fallback
+    let fallbackLat = 13.7563; // Default BKK
+    let fallbackLng = 100.5018;
+    try {
+      const locRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`, {
+        headers: { "User-Agent": "WanderApp/1.0" }
+      });
+      if (locRes.ok) {
+        const data = await locRes.json();
+        if (data && data.length > 0) {
+          fallbackLat = parseFloat(data[0].lat);
+          fallbackLng = parseFloat(data[0].lon);
+        }
+      }
+      await new Promise(r => setTimeout(r, 1100)); // Delay
+    } catch (e) {
+      console.warn("Failed to get fallback location coordinates");
+    }
+
+    let idx = 0;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const p of parsed.places) {
-      let finalLat = p.lat;
-      let finalLng = p.lng;
+      // Jitter the fallback slightly so pins don't stack perfectly if multiple fail
+      const jitterLat = fallbackLat + (Math.random() * 0.01 - 0.005);
+      const jitterLng = fallbackLng + (Math.random() * 0.01 - 0.005);
+      
+      let finalLat = p.lat && !isNaN(p.lat) ? p.lat : jitterLat;
+      let finalLng = p.lng && !isNaN(p.lng) ? p.lng : jitterLng;
       
       try {
-        const osmRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(p.nameTh)}&format=json&limit=1`, {
+        // Anchor the search to the location to prevent finding places in wrong provinces!
+        const searchQuery = `${p.nameTh} ${location}`;
+        const osmRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`, {
           headers: { "User-Agent": "WanderApp/1.0" }
         });
         if (osmRes.ok) {
@@ -226,6 +252,12 @@ async function generatePlacesWithAI(location: string) {
           if (data && data.length > 0) {
             finalLat = parseFloat(data[0].lat);
             finalLng = parseFloat(data[0].lon);
+          } else {
+            // If OSM couldn't verify it IN the location, fallback to the jittered location center!
+            // This prevents LLM hallucinated coordinates dropping pins in the ocean.
+            console.log(`[Geocoding Fallback] Could not verify "${p.nameTh}" in ${location}. Anchoring to center.`);
+            finalLat = jitterLat;
+            finalLng = jitterLng;
           }
         }
         
