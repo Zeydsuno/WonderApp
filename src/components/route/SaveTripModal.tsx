@@ -129,7 +129,7 @@ export function SaveTripModal({ isOpen, onClose, onSave, defaultName = "My Aweso
                   
                   <h2 className="text-xl font-black text-zinc-900 mb-2">Trip Saved Successfully!</h2>
                   <p className="text-sm text-zinc-500 mb-8">
-                    "{tripName}" has been securely saved to your profile.
+                    &quot;{tripName}&quot; has been securely saved to your profile.
                   </p>
 
                   <div className="flex flex-col gap-3 w-full">

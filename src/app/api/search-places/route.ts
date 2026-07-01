@@ -231,7 +231,6 @@ async function generatePlacesWithAI(location: string) {
       console.warn("Failed to get fallback location coordinates");
     }
 
-    let idx = 0;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const p of parsed.places) {
       // Jitter the fallback slightly so pins don't stack perfectly if multiple fail

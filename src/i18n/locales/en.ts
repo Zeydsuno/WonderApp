@@ -69,6 +69,7 @@ export const en = {
     thingsToDo: "Things to do",
     addTimeline: "Add to timeline",
     addedMsg: "added to your timeline.",
+    free: "Free",
   },
   social: {
     title: "Social to Route",
@@ -105,7 +106,6 @@ export const en = {
     noPlacesDesc: "Head to Explore or paste a social link to get started.",
     walk: "walk",
     drive: "drive",
-    shuffledMsg: "Route shuffled. Check the new order.",
     shuffledMsg: "Route shuffled. Check the new order.",
     fromLocation: "from your location",
     free: "Free",

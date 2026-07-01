@@ -17,6 +17,7 @@ export function useRouteTimes(selectedPlaces: Place[], tripStartTime: string, us
 
   useEffect(() => {
     if (selectedPlaces.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSlots([]);
       setInitialTransitMin(null);
       return;

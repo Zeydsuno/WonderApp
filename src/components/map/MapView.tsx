@@ -128,7 +128,7 @@ export default function MapView({ places, activePlaceId, onMarkerClick }: MapVie
   }, []);
 
   useEffect(() => {
-    const waypoints = [];
+    const waypoints: { lat: number; lng: number }[] = [];
     if (userLocation) {
       waypoints.push({ lat: userLocation[0], lng: userLocation[1] });
     }
