@@ -10,12 +10,13 @@ const MapView = dynamic(() => import("@/components/map/MapView"), {
 });
 
 export function RouteMapLayer() {
-  const { selectedPlaces, setActiveDetailPlace } = useTripContext();
+  const { selectedPlaces, activePreviewPlace, setActiveDetailPlace } = useTripContext();
 
   return (
     <div className="absolute inset-0 z-0">
       <MapView 
         places={selectedPlaces} 
+        activePlaceId={activePreviewPlace?.id}
         onMarkerClick={setActiveDetailPlace} 
       />
     </div>

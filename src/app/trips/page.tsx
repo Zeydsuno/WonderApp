@@ -3,11 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useSavedTrips } from "@/hooks/useSavedTrips";
 import { useTripContext } from "@/context/TripContext";
+import { useState } from "react";
+import { PlaceCard } from "@/components/places/PlaceCard";
+import { PlaceDetail } from "@/components/places/PlaceDetail";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 export default function TripsPage() {
   const router = useRouter();
   const { trips, isLoading, deleteTrip } = useSavedTrips();
-  const { clearTrip, addPlace } = useTripContext();
+  const { clearTrip, addPlace, likedPlaces, activeDetailPlace, setActiveDetailPlace } = useTripContext();
+  const [activeTab, setActiveTab] = useState<'trips' | 'places'>('trips');
+  const [tripToDelete, setTripToDelete] = useState<string | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const loadTripToRoute = (trip: any) => {
@@ -30,14 +36,51 @@ export default function TripsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="text-lg font-bold text-zinc-900">Saved Trips</h1>
+          <h1 className="text-lg font-bold text-zinc-900">Saved</h1>
           <div className="w-10" /> {/* Spacer */}
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex bg-zinc-100 p-1 rounded-xl">
+          <button
+            onClick={() => setActiveTab('trips')}
+            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
+              activeTab === 'trips' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+            }`}
+          >
+            Trips
+          </button>
+          <button
+            onClick={() => setActiveTab('places')}
+            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
+              activeTab === 'places' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+            }`}
+          >
+            Places
+          </button>
         </div>
       </div>
 
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={tripToDelete !== null}
+        title="Delete Saved Trip?"
+        description="Are you sure you want to delete this trip? This action cannot be undone."
+        confirmText="Yes, delete it"
+        cancelText="Cancel"
+        isDestructive={true}
+        onConfirm={() => {
+          if (tripToDelete) {
+            deleteTrip(tripToDelete);
+            setTripToDelete(null);
+          }
+        }}
+        onCancel={() => setTripToDelete(null)}
+      />
+
       {/* Content */}
-      <div className="px-5 mt-8 flex flex-col gap-4 pb-12">
-        {isLoading ? (
+      <div className="px-5 mt-6 flex flex-col gap-4 pb-12">
+        {activeTab === 'trips' ? isLoading ? (
           <div className="text-center text-zinc-500 py-10 animate-pulse">Loading trips...</div>
         ) : trips.length === 0 ? (
           <div className="flex flex-col items-center text-center mt-12">
@@ -63,8 +106,8 @@ export default function TripsPage() {
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-bold text-zinc-900 text-lg">{trip.title}</h3>
                 <button 
-                  onClick={() => deleteTrip(trip.id)}
-                  className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center active:scale-95"
+                  onClick={() => setTripToDelete(trip.id)}
+                  className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center active:scale-95 transition-colors hover:bg-red-100"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -84,16 +127,58 @@ export default function TripsPage() {
                 )}
               </div>
               
-              <button
+              <button 
                 onClick={() => loadTripToRoute(trip)}
-                className="w-full bg-zinc-900 text-white font-bold py-3 rounded-2xl active:scale-95 transition-transform"
+                className="w-full py-3.5 rounded-xl font-bold text-white bg-coral-500 hover:bg-coral-600 active:scale-95 transition-all shadow-md shadow-coral-500/30"
               >
                 Load Trip
               </button>
             </div>
           ))
+        ) : (
+          likedPlaces.length === 0 ? (
+            <div className="flex flex-col items-center text-center mt-12">
+              <div className="w-24 h-24 bg-coral-50 rounded-full flex items-center justify-center mb-6 text-coral-300">
+                <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-black text-zinc-900 mb-2 tracking-tight">No liked places yet</h2>
+              <p className="text-sm text-zinc-500 mb-8 max-w-[250px]">
+                Tap the heart icon on any place to save it here for later.
+              </p>
+              <button 
+                onClick={() => router.push('/')}
+                className="bg-coral-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-coral-500/30 active:scale-95 transition-all"
+              >
+                Explore Places
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {likedPlaces.map((place) => (
+                <PlaceCard
+                  key={place.id}
+                  place={place}
+                  onClick={() => setActiveDetailPlace(place)}
+                />
+              ))}
+            </div>
+          )
         )}
       </div>
+
+      {activeDetailPlace && (
+        <PlaceDetail
+          place={activeDetailPlace}
+          onClose={() => setActiveDetailPlace(null)}
+          onAdd={(p) => {
+            addPlace(p);
+            setActiveDetailPlace(null);
+            router.push('/route');
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -5,66 +5,29 @@ import { TimelineSlot } from "@/components/itinerary/TimelineSlot";
 import { TransitGap } from "@/components/timeline/TransitGap";
 import type { Place } from "@/data/places";
 import { useTripContext } from "@/context/TripContext";
-
-interface SlotData {
-  place: Place;
-  startTime: string;
-  endTime: string;
-  transitMin: number;
-}
+import type { SlotData } from "@/hooks/useRouteTimes";
 
 interface TimelineViewProps {
-  initialSlots: SlotData[];
+  slots: SlotData[];
   onPlaceClick: (place: Place) => void;
+  isCalculating?: boolean;
+  initialTransitMin?: number | null;
 }
 
-function recalcTimes(slots: SlotData[]): SlotData[] {
-  let currentMinutes = 10 * 60; // Start at 10:00
-  return slots.map((slot, i) => {
-    if (i > 0) currentMinutes += slot.transitMin; // transit from prev
-    const startMin = currentMinutes;
-    const endMin = startMin + slot.place.estDuration;
-    currentMinutes = endMin;
-    const fmt = (m: number) => {
-      const h = Math.floor(m / 60);
-      const mm = m % 60;
-      return `${h.toString().padStart(2, "0")}:${mm.toString().padStart(2, "0")}`;
-    };
-    return { ...slot, startTime: fmt(startMin), endTime: fmt(endMin) };
-  });
-}
+export function TimelineView({ slots, onPlaceClick, isCalculating = false, initialTransitMin }: TimelineViewProps) {
+  const { removePlace, reorderPlaces } = useTripContext();
 
-export function TimelineView({ initialSlots, onPlaceClick }: TimelineViewProps) {
-  const { removePlace } = useTripContext();
-  const [slots, setSlots] = useState<SlotData[]>(() => recalcTimes(initialSlots));
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const handleMoveUp = (index: number) => {
+    if (index > 0) {
+      reorderPlaces(index, index - 1);
+    }
+  };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSlots(recalcTimes(initialSlots));
-  }, [initialSlots]);
-
-  const handleDragStart = useCallback((_e: React.DragEvent, index: number) => {
-    setDragIdx(index);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-  }, []);
-
-  const handleDrop = useCallback(
-    (_e: React.DragEvent, dropIdx: number) => {
-      if (dragIdx === null || dragIdx === dropIdx) return;
-      setSlots((prev) => {
-        const newSlots = [...prev];
-        const [moved] = newSlots.splice(dragIdx, 1);
-        newSlots.splice(dropIdx, 0, moved);
-        return recalcTimes(newSlots);
-      });
-      setDragIdx(null);
-    },
-    [dragIdx]
-  );
+  const handleMoveDown = (index: number) => {
+    if (index < slots.length - 1) {
+      reorderPlaces(index, index + 1);
+    }
+  };
 
   if (slots.length === 0) {
     return (
@@ -83,7 +46,10 @@ export function TimelineView({ initialSlots, onPlaceClick }: TimelineViewProps) 
   }
 
   return (
-    <div className="px-5 mt-2 space-y-0">
+    <div className={`px-5 mt-2 space-y-0 transition-opacity duration-300 ${isCalculating ? 'opacity-50' : 'opacity-100'}`}>
+      {initialTransitMin != null && initialTransitMin > 0 && slots.length > 0 && (
+        <TransitGap duration={initialTransitMin} mode={initialTransitMin > 10 ? "drive" : "walk"} isInitial={true} />
+      )}
       {slots.map((slot, i) => (
         <div key={slot.place.id}>
           <TimelineSlot
@@ -91,9 +57,9 @@ export function TimelineView({ initialSlots, onPlaceClick }: TimelineViewProps) 
             startTime={slot.startTime}
             endTime={slot.endTime}
             index={i}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
+            total={slots.length}
+            onMoveUp={handleMoveUp}
+            onMoveDown={handleMoveDown}
             onDelete={removePlace}
             onClick={() => onPlaceClick(slot.place)}
           />
